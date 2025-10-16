@@ -193,7 +193,7 @@ export default function App() {
       <IonContent fullscreen>
         <Switch>
           <Route exact path="/">
-            <HomeScreen lists={lists} onEditList={editList} onDeleteList={deleteList} />
+            <HomeScreen lists={lists} itemsByListId={itemsByListId} onEditList={editList} onDeleteList={deleteList} />
           </Route>
           <Route exact path="/lists/new">
             <AddListScreen onCreate={addList} />
