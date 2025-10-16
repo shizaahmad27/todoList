@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useState } from 'react'
-import { IonButtons, IonButton, IonCheckbox, IonIcon, IonItem, IonLabel, IonList, IonReorder, IonReorderGroup, IonSearchbar } from '@ionic/react'
+import { IonButtons, IonButton, IonCheckbox, IonIcon, IonItem, IonLabel, IonList, IonReorder, IonReorderGroup, IonSearchbar, IonSelect, IonSelectOption } from '@ionic/react'
 import { createOutline, trash } from 'ionicons/icons'
 import { useHistory, useParams } from 'react-router-dom'
-import { List, TodoItem } from '../state/store'
+import { List, TodoItem, Priority } from '../state/store'
 import TodoInput from './TodoInput'
 import ListTabs from './ListTabs'
 
@@ -16,12 +16,13 @@ export type ListDetailScreenProps = {
   editItem: (id: string, newText: string) => void
   deleteItem: (id: string) => void
   setItemOrder: (items: TodoItem[]) => void
+  updateItemPriority: (id: string, priority: Priority) => void
   // delete control removed from tabs
 }
 
 export default function ListDetailScreen(props: ListDetailScreenProps) {
   const { id } = (useParams() as any) as { id?: string }
-  const { lists, selectedListId, setSelectedListId, itemsByListId, addItem, toggleItem, editItem, deleteItem, setItemOrder } = props
+  const { lists, selectedListId, setSelectedListId, itemsByListId, addItem, toggleItem, editItem, deleteItem, setItemOrder, updateItemPriority } = props
   const history = useHistory()
 
   useEffect(() => {
@@ -84,6 +85,16 @@ export default function ListDetailScreen(props: ListDetailScreenProps) {
               <IonLabel style={{ marginLeft: 8, textDecoration: it.done ? 'line-through' : 'none', color: it.done ? '#6b7280' : undefined, opacity: it.done ? 0.7 : 1 }}>
                 {it.text}
               </IonLabel>
+              <IonSelect
+                value={it.priority}
+                onIonChange={(e) => updateItemPriority(it.id, e.detail.value)}
+                interface="popover"
+                style={{ minWidth: '80px', marginRight: '8px' }}
+              >
+                <IonSelectOption value="high">Høy</IonSelectOption>
+                <IonSelectOption value="normal">Normal</IonSelectOption>
+                <IonSelectOption value="low">Lav</IonSelectOption>
+              </IonSelect>
               <IonButtons slot="end">
                 <IonButton
                   onClick={async () => {

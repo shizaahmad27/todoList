@@ -5,7 +5,7 @@ import { chevronBack } from 'ionicons/icons'
 import HomeScreen from './components/HomeScreen'
 import AddListScreen from './components/AddListScreen'
 import ListDetailScreen from './components/ListDetailScreen'
-import { List, TodoItem } from './state/store'
+import { List, TodoItem, Priority } from './state/store'
 import { deleteFile, listFilenameFromSlug, listsIndexPath, readJson, writeJson } from './services/filesystemService'
 
 export default function App() {
@@ -52,7 +52,7 @@ export default function App() {
 
   function addItem(text: string) {
     if (!selectedListId) return
-    const newItem: TodoItem = { id: crypto.randomUUID(), text, done: false }
+    const newItem: TodoItem = { id: crypto.randomUUID(), text, done: false, priority: 'normal' }
     const source = itemsByListId[selectedListId] ?? []
     const pending: TodoItem[] = []
     const doneItems: TodoItem[] = []
@@ -60,7 +60,9 @@ export default function App() {
       if (it.done) doneItems.push(it)
       else pending.push(it)
     }
-    const next = [...pending, newItem, ...doneItems]
+    const priorityOrder = { high: 0, normal: 1, low: 2 }
+    const sortedPending = [...pending, newItem].sort((a, b) => priorityOrder[a.priority] - priorityOrder[b.priority])
+    const next = [...sortedPending, ...doneItems]
     setItemsByListId((prev: Record<string, TodoItem[]>) => ({ ...prev, [selectedListId]: next }))
     const path = listFilenameFromSlug(selectedListId)
     void writeJson(path, next)
@@ -77,7 +79,9 @@ export default function App() {
       if (it.done) doneItems.push(it)
       else pending.push(it)
     }
-    const nextOrdered = [...pending, ...doneItems]
+    const priorityOrder = { high: 0, normal: 1, low: 2 }
+    const sortedPending = pending.sort((a, b) => priorityOrder[a.priority] - priorityOrder[b.priority])
+    const nextOrdered = [...sortedPending, ...doneItems]
     setItemsByListId((prev: Record<string, TodoItem[]>) => ({ ...prev, [selectedListId]: nextOrdered }))
     void writeJson(path, nextOrdered)
   }
@@ -93,6 +97,24 @@ export default function App() {
     const path = listFilenameFromSlug(selectedListId)
     const next = selectedItems.map((it) => (it.id === id ? { ...it, text: trimmed } : it))
     void writeJson(path, next)
+  }
+
+  function updateItemPriority(id: string, priority: Priority) {
+    if (!selectedListId) return
+    const path = listFilenameFromSlug(selectedListId)
+    const source = itemsByListId[selectedListId] ?? []
+    const updated = source.map((it) => (it.id === id ? { ...it, priority } : it))
+    const pending: TodoItem[] = []
+    const doneItems: TodoItem[] = []
+    for (const it of updated) {
+      if (it.done) doneItems.push(it)
+      else pending.push(it)
+    }
+    const priorityOrder = { high: 0, normal: 1, low: 2 }
+    const sortedPending = pending.sort((a, b) => priorityOrder[a.priority] - priorityOrder[b.priority])
+    const nextOrdered = [...sortedPending, ...doneItems]
+    setItemsByListId((prev: Record<string, TodoItem[]>) => ({ ...prev, [selectedListId]: nextOrdered }))
+    void writeJson(path, nextOrdered)
   }
 
   function deleteItem(id: string) {
@@ -187,6 +209,7 @@ export default function App() {
               editItem={editItem}
               deleteItem={deleteItem}
               setItemOrder={setItemOrder}
+              updateItemPriority={updateItemPriority}
             />
           </Route>
         </Switch>
