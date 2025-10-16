@@ -1,0 +1,1 @@
+{"root":["./src/app.tsx","./src/main.tsx","./src/components/listtabs.tsx","./src/components/todoinput.tsx","./src/components/todolist.tsx","./src/services/filesystemservice.ts","./src/state/store.ts","./vite.config.ts","./capacitor.config.ts"],"errors":true,"version":"5.9.3"}
