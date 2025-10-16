@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
-import { IonContent, IonHeader, IonTitle, IonToolbar } from '@ionic/react'
-import { BrowserRouter as Router, Route, Switch } from 'react-router-dom'
+import { IonButtons, IonButton, IonContent, IonHeader, IonIcon, IonTitle, IonToolbar } from '@ionic/react'
+import { BrowserRouter as Router, Route, Switch, useHistory, useLocation } from 'react-router-dom'
+import { chevronBack } from 'ionicons/icons'
 import HomeScreen from './components/HomeScreen'
 import AddListScreen from './components/AddListScreen'
 import ListDetailScreen from './components/ListDetailScreen'
@@ -108,13 +109,29 @@ export default function App() {
 
   const ListDetailAny = ListDetailScreen as any
 
-  return (
-    <Router>
+  function HeaderBar() {
+    const location = useLocation()
+    const history = useHistory()
+    const showBack = location.pathname !== '/'
+    return (
       <IonHeader>
         <IonToolbar>
+          {showBack && (
+            <IonButtons slot="start">
+              <IonButton onClick={() => history.push('/')}> 
+                <IonIcon icon={chevronBack} />
+              </IonButton>
+            </IonButtons>
+          )}
           <IonTitle>TodoList</IonTitle>
         </IonToolbar>
       </IonHeader>
+    )
+  }
+
+  return (
+    <Router>
+      <HeaderBar />
       <IonContent fullscreen>
         <Switch>
           <Route exact path="/">
