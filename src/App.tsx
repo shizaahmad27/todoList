@@ -127,6 +127,11 @@ export default function App() {
   }, [selectedListId])
 
   const ListDetailAny = ListDetailScreen as any
+  function editList(listId: string, name: string, description?: string) {
+    const updated = lists.map((l) => (l.id === listId ? { ...l, name, description } : l))
+    setLists(updated)
+    void writeJson(listsIndexPath, updated)
+  }
 
   function deleteList(listId: string) {
     const remaining = lists.filter((l) => l.id !== listId)
@@ -166,7 +171,7 @@ export default function App() {
       <IonContent fullscreen>
         <Switch>
           <Route exact path="/">
-            <HomeScreen lists={lists} onDeleteList={deleteList} />
+            <HomeScreen lists={lists} onEditList={editList} onDeleteList={deleteList} />
           </Route>
           <Route exact path="/lists/new">
             <AddListScreen onCreate={addList} />
