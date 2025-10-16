@@ -1,9 +1,9 @@
 import { IonButton, IonIcon, IonItem, IonLabel, IonList } from '@ionic/react'
-import { add } from 'ionicons/icons'
+import { add, trash } from 'ionicons/icons'
 import { useHistory } from 'react-router-dom'
 import { List } from '../state/store'
 
-export default function HomeScreen({ lists }: { lists: List[] }) {
+export default function HomeScreen({ lists, onDeleteList }: { lists: List[]; onDeleteList: (listId: string) => void }) {
   const history = useHistory()
   return (
     <div style={{ padding: '8px' }}>
@@ -24,11 +24,16 @@ export default function HomeScreen({ lists }: { lists: List[] }) {
       ) : (
         <IonList>
           {lists.map((l) => (
-            <IonItem key={l.id} button onClick={() => history.push(`/lists/${l.id}`)}>
-              <IonLabel>
-                <h2 style={{ margin: 0 }}>{l.name}</h2>
-                {l.description && <p style={{ marginTop: 4 }}>{l.description}</p>}
-              </IonLabel>
+            <IonItem key={l.id}>
+              <div style={{ flex: 1 }} onClick={() => history.push(`/lists/${l.id}`)}>
+                <IonLabel>
+                  <h2 style={{ margin: 0 }}>{l.name}</h2>
+                  {l.description && <p style={{ marginTop: 4 }}>{l.description}</p>}
+                </IonLabel>
+              </div>
+              <IonButton color="danger" onClick={() => onDeleteList(l.id)}>
+                <IonIcon icon={trash} />
+              </IonButton>
             </IonItem>
           ))}
         </IonList>

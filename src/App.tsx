@@ -6,7 +6,7 @@ import HomeScreen from './components/HomeScreen'
 import AddListScreen from './components/AddListScreen'
 import ListDetailScreen from './components/ListDetailScreen'
 import { List, TodoItem } from './state/store'
-import { listFilenameFromSlug, listsIndexPath, readJson, writeJson } from './services/filesystemService'
+import { deleteFile, listFilenameFromSlug, listsIndexPath, readJson, writeJson } from './services/filesystemService'
 
 export default function App() {
   const [lists, setLists] = useState<List[]>([])
@@ -109,6 +109,18 @@ export default function App() {
 
   const ListDetailAny = ListDetailScreen as any
 
+  function deleteList(listId: string) {
+    const remaining = lists.filter((l) => l.id !== listId)
+    setLists(remaining)
+    void writeJson(listsIndexPath, remaining)
+    const { [listId]: _removed, ...rest } = itemsByListId
+    setItemsByListId(rest)
+    void deleteFile(listFilenameFromSlug(listId))
+    if (selectedListId === listId) {
+      setSelectedListId(remaining[0]?.id ?? null)
+    }
+  }
+
   function HeaderBar() {
     const location = useLocation()
     const history = useHistory()
@@ -135,7 +147,7 @@ export default function App() {
       <IonContent fullscreen>
         <Switch>
           <Route exact path="/">
-            <HomeScreen lists={lists} />
+            <HomeScreen lists={lists} onDeleteList={deleteList} />
           </Route>
           <Route exact path="/lists/new">
             <AddListScreen onCreate={addList} />
