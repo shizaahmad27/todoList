@@ -15,7 +15,6 @@ export default function App() {
 
   const selectedItems = useMemo(() => (selectedListId ? itemsByListId[selectedListId] ?? [] : []), [itemsByListId, selectedListId])
 
-  // Load lists index and selected list items on startup
   useEffect(() => {
     ;(async () => {
       const storedLists = await readJson<List[]>(listsIndexPath, [])
@@ -50,7 +49,6 @@ export default function App() {
     setItemsByListId((prev) => ({ ...prev, [id]: prev[id] ?? [] }))
   }
 
-  // Note: delete list flow can be added on the detail screen later
 
   function addItem(text: string) {
     if (!selectedListId) return
@@ -73,7 +71,6 @@ export default function App() {
     const path = listFilenameFromSlug(selectedListId)
     const source = itemsByListId[selectedListId] ?? []
     const toggled = source.map((it) => (it.id === id ? { ...it, done: !it.done } : it))
-    // Ensure completed items are listed after pending items, preserving relative order
     const pending: TodoItem[] = []
     const doneItems: TodoItem[] = []
     for (const it of toggled) {
@@ -119,7 +116,6 @@ export default function App() {
     void writeJson(path, newOrder)
   }
 
-  // Lazy-load items when switching lists
   useEffect(() => {
     ;(async () => {
       if (!selectedListId) return
