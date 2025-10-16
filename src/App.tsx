@@ -5,7 +5,7 @@ import HomeScreen from './components/HomeScreen'
 import AddListScreen from './components/AddListScreen'
 import ListDetailScreen from './components/ListDetailScreen'
 import { List, TodoItem } from './state/store'
-import { deleteFile, listFilenameFromSlug, listsIndexPath, readJson, writeJson } from './services/filesystemService'
+import { listFilenameFromSlug, listsIndexPath, readJson, writeJson } from './services/filesystemService'
 
 export default function App() {
   const [lists, setLists] = useState<List[]>([])
@@ -71,6 +71,30 @@ export default function App() {
     void writeJson(path, next)
   }
 
+  function editItem(id: string, newText: string) {
+    if (!selectedListId) return
+    const trimmed = newText.trim()
+    if (!trimmed) return
+    setItemsByListId((prev: Record<string, TodoItem[]>) => ({
+      ...prev,
+      [selectedListId]: (prev[selectedListId] ?? []).map((it: TodoItem) => (it.id === id ? { ...it, text: trimmed } : it)),
+    }))
+    const path = listFilenameFromSlug(selectedListId)
+    const next = selectedItems.map((it) => (it.id === id ? { ...it, text: trimmed } : it))
+    void writeJson(path, next)
+  }
+
+  function deleteItem(id: string) {
+    if (!selectedListId) return
+    const next = selectedItems.filter((it) => it.id !== id)
+    setItemsByListId((prev: Record<string, TodoItem[]>) => ({
+      ...prev,
+      [selectedListId]: next,
+    }))
+    const path = listFilenameFromSlug(selectedListId)
+    void writeJson(path, next)
+  }
+
   // Lazy-load items when switching lists
   useEffect(() => {
     ;(async () => {
@@ -81,6 +105,8 @@ export default function App() {
       setItemsByListId((prev) => ({ ...prev, [selectedListId]: data }))
     })()
   }, [selectedListId])
+
+  const ListDetailAny = ListDetailScreen as any
 
   return (
     <Router>
@@ -98,13 +124,15 @@ export default function App() {
             <AddListScreen onCreate={addList} />
           </Route>
           <Route path="/lists/:id">
-            <ListDetailScreen
+            <ListDetailAny
               lists={lists}
               selectedListId={selectedListId}
               setSelectedListId={setSelectedListId}
               itemsByListId={itemsByListId}
               addItem={addItem}
               toggleItem={toggleItem}
+              editItem={editItem}
+              deleteItem={deleteItem}
             />
           </Route>
         </Switch>

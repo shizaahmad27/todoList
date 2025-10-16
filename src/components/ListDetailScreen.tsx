@@ -1,19 +1,24 @@
 import { useEffect } from 'react'
-import { IonItem, IonLabel, IonList } from '@ionic/react'
+import { IonButtons, IonButton, IonIcon, IonItem, IonLabel, IonList } from '@ionic/react'
+import { createOutline, trash } from 'ionicons/icons'
 import { useParams } from 'react-router-dom'
 import { List, TodoItem } from '../state/store'
 import TodoInput from './TodoInput'
 
-export default function ListDetailScreen(props: {
+export type ListDetailScreenProps = {
   lists: List[]
   selectedListId: string | null
   setSelectedListId: (id: string) => void
   itemsByListId: Record<string, TodoItem[]>
   addItem: (text: string) => void
   toggleItem: (id: string) => void
-}) {
+  editItem: (id: string, newText: string) => void
+  deleteItem: (id: string) => void
+}
+
+export default function ListDetailScreen(props: ListDetailScreenProps) {
   const { id } = useParams<{ id: string }>()
-  const { lists, selectedListId, setSelectedListId, itemsByListId, addItem, toggleItem } = props
+  const { lists, selectedListId, setSelectedListId, itemsByListId, addItem, toggleItem, editItem, deleteItem } = props
 
   useEffect(() => {
     if (id && id !== selectedListId) setSelectedListId(id)
@@ -31,8 +36,21 @@ export default function ListDetailScreen(props: {
       <TodoInput onAdd={addItem} />
       <IonList>
         {items.map((it) => (
-          <IonItem key={it.id} button onClick={() => toggleItem(it.id)}>
-            <IonLabel>{it.text}</IonLabel>
+          <IonItem key={it.id}>
+            <IonLabel onClick={() => toggleItem(it.id)}>{it.text}</IonLabel>
+            <IonButtons slot="end">
+              <IonButton
+                onClick={async () => {
+                  const newText = prompt('Rediger tekst', it.text) || ''
+                  if (newText.trim()) editItem(it.id, newText)
+                }}
+              >
+                <IonIcon icon={createOutline} />
+              </IonButton>
+              <IonButton color="danger" onClick={() => deleteItem(it.id)}>
+                <IonIcon icon={trash} />
+              </IonButton>
+            </IonButtons>
           </IonItem>
         ))}
       </IonList>
