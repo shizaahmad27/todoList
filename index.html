@@ -6,6 +6,13 @@
     <meta name="format-detection" content="telephone=no" />
     <title>TodoList</title>
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <style>
+      @keyframes itemMoveFade {
+        from { opacity: 0.4; transform: translateY(-4px) scale(0.98); }
+        to { opacity: 1; transform: translateY(0) scale(1); }
+      }
+      .item-animated-move { animation: itemMoveFade 220ms ease-out; }
+    </style>
   </head>
   <body>
     <div id="root"></div>

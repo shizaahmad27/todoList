@@ -55,21 +55,34 @@ export default function App() {
   function addItem(text: string) {
     if (!selectedListId) return
     const newItem: TodoItem = { id: crypto.randomUUID(), text, done: false }
-    setItemsByListId((prev: Record<string, TodoItem[]>) => ({ ...prev, [selectedListId]: [...(prev[selectedListId] ?? []), newItem] }))
+    const source = itemsByListId[selectedListId] ?? []
+    const pending: TodoItem[] = []
+    const doneItems: TodoItem[] = []
+    for (const it of source) {
+      if (it.done) doneItems.push(it)
+      else pending.push(it)
+    }
+    const next = [...pending, newItem, ...doneItems]
+    setItemsByListId((prev: Record<string, TodoItem[]>) => ({ ...prev, [selectedListId]: next }))
     const path = listFilenameFromSlug(selectedListId)
-    const next = [...selectedItems, newItem]
     void writeJson(path, next)
   }
 
   function toggleItem(id: string) {
     if (!selectedListId) return
-    setItemsByListId((prev: Record<string, TodoItem[]>) => ({
-      ...prev,
-      [selectedListId]: (prev[selectedListId] ?? []).map((it: TodoItem) => (it.id === id ? { ...it, done: !it.done } : it)),
-    }))
     const path = listFilenameFromSlug(selectedListId)
-    const next = selectedItems.map((it) => (it.id === id ? { ...it, done: !it.done } : it))
-    void writeJson(path, next)
+    const source = itemsByListId[selectedListId] ?? []
+    const toggled = source.map((it) => (it.id === id ? { ...it, done: !it.done } : it))
+    // Ensure completed items are listed after pending items, preserving relative order
+    const pending: TodoItem[] = []
+    const doneItems: TodoItem[] = []
+    for (const it of toggled) {
+      if (it.done) doneItems.push(it)
+      else pending.push(it)
+    }
+    const nextOrdered = [...pending, ...doneItems]
+    setItemsByListId((prev: Record<string, TodoItem[]>) => ({ ...prev, [selectedListId]: nextOrdered }))
+    void writeJson(path, nextOrdered)
   }
 
   function editItem(id: string, newText: string) {
@@ -94,6 +107,16 @@ export default function App() {
     }))
     const path = listFilenameFromSlug(selectedListId)
     void writeJson(path, next)
+  }
+
+  function setItemOrder(newOrder: TodoItem[]) {
+    if (!selectedListId) return
+    setItemsByListId((prev: Record<string, TodoItem[]>) => ({
+      ...prev,
+      [selectedListId]: newOrder,
+    }))
+    const path = listFilenameFromSlug(selectedListId)
+    void writeJson(path, newOrder)
   }
 
   // Lazy-load items when switching lists
@@ -162,6 +185,7 @@ export default function App() {
               toggleItem={toggleItem}
               editItem={editItem}
               deleteItem={deleteItem}
+              setItemOrder={setItemOrder}
             />
           </Route>
         </Switch>
