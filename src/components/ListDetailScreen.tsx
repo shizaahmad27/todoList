@@ -17,7 +17,6 @@ export type ListDetailScreenProps = {
   deleteItem: (id: string) => void
   setItemOrder: (items: TodoItem[]) => void
   updateItemPriority: (id: string, priority: Priority) => void
-  // delete control removed from tabs
 }
 
 export default function ListDetailScreen(props: ListDetailScreenProps) {
