@@ -12,9 +12,8 @@ export default function ListTabs(props: ListTabsProps) {
   const { lists, selectedListId, onSelect } = props
 
   const value = selectedListId ?? undefined
-  // delete removed
 
-  const showDropdown = lists.length > 5
+  const showDropdown = lists.length > 3
 
   return (
     <div style={{ padding: '8px' }}>
