@@ -27,6 +27,7 @@ export async function deleteFile(path: string): Promise<void> {
   try {
     await Filesystem.deleteFile({ path, directory: dataDirectory })
   } catch (_err) {
+      console.log("Error deleting file")
    
   }
 }
