@@ -15,6 +15,18 @@ export default function App() {
 
   const selectedItems = useMemo(() => (selectedListId ? itemsByListId[selectedListId] ?? [] : []), [itemsByListId, selectedListId])
 
+  function orderItemsByPriorityThenDone(items: TodoItem[]): TodoItem[] {
+    const pending: TodoItem[] = []
+    const doneItems: TodoItem[] = []
+    for (const item of items) {
+      if (item.done) doneItems.push(item)
+      else pending.push(item)
+    }
+    const priorityOrder: Record<Priority, number> = { high: 0, normal: 1, low: 2 }
+    const sortedPending = pending.sort((a, b) => priorityOrder[a.priority] - priorityOrder[b.priority])
+    return [...sortedPending, ...doneItems]
+  }
+
   useEffect(() => {
     ;(async () => {
       const storedLists = await readJson<List[]>(listsIndexPath, [])
@@ -54,15 +66,7 @@ export default function App() {
     if (!selectedListId) return
     const newItem: TodoItem = { id: crypto.randomUUID(), text, done: false, priority: 'normal' }
     const source = itemsByListId[selectedListId] ?? []
-    const pending: TodoItem[] = []
-    const doneItems: TodoItem[] = []
-    for (const it of source) {
-      if (it.done) doneItems.push(it)
-      else pending.push(it)
-    }
-    const priorityOrder = { high: 0, normal: 1, low: 2 }
-    const sortedPending = [...pending, newItem].sort((a, b) => priorityOrder[a.priority] - priorityOrder[b.priority])
-    const next = [...sortedPending, ...doneItems]
+    const next = orderItemsByPriorityThenDone([...source, newItem])
     setItemsByListId((prev: Record<string, TodoItem[]>) => ({ ...prev, [selectedListId]: next }))
     const path = listFilenameFromSlug(selectedListId)
     void writeJson(path, next)
@@ -73,15 +77,7 @@ export default function App() {
     const path = listFilenameFromSlug(selectedListId)
     const source = itemsByListId[selectedListId] ?? []
     const toggled = source.map((it) => (it.id === id ? { ...it, done: !it.done } : it))
-    const pending: TodoItem[] = []
-    const doneItems: TodoItem[] = []
-    for (const it of toggled) {
-      if (it.done) doneItems.push(it)
-      else pending.push(it)
-    }
-    const priorityOrder = { high: 0, normal: 1, low: 2 }
-    const sortedPending = pending.sort((a, b) => priorityOrder[a.priority] - priorityOrder[b.priority])
-    const nextOrdered = [...sortedPending, ...doneItems]
+    const nextOrdered = orderItemsByPriorityThenDone(toggled)
     setItemsByListId((prev: Record<string, TodoItem[]>) => ({ ...prev, [selectedListId]: nextOrdered }))
     void writeJson(path, nextOrdered)
   }
@@ -104,15 +100,7 @@ export default function App() {
     const path = listFilenameFromSlug(selectedListId)
     const source = itemsByListId[selectedListId] ?? []
     const updated = source.map((it) => (it.id === id ? { ...it, priority } : it))
-    const pending: TodoItem[] = []
-    const doneItems: TodoItem[] = []
-    for (const it of updated) {
-      if (it.done) doneItems.push(it)
-      else pending.push(it)
-    }
-    const priorityOrder = { high: 0, normal: 1, low: 2 }
-    const sortedPending = pending.sort((a, b) => priorityOrder[a.priority] - priorityOrder[b.priority])
-    const nextOrdered = [...sortedPending, ...doneItems]
+    const nextOrdered = orderItemsByPriorityThenDone(updated)
     setItemsByListId((prev: Record<string, TodoItem[]>) => ({ ...prev, [selectedListId]: nextOrdered }))
     void writeJson(path, nextOrdered)
   }
